@@ -3,9 +3,12 @@
 #include <string.h>
 #include <iostream>
 #include <fstream>
+#include <ctime>
 #include <vector>
 #include<mpi.h>
 using namespace std;
+
+unsigned t0, t1;
 
 struct Estacion {
   int id;
@@ -435,6 +438,7 @@ void planviaje_Maestro(vector <Estacion> metro, int ini, int des, int tamano)
 
 int main(int argc, char* argv[])
 {
+	t0=clock();
 	vector <Estacion> metro;
 	string inic,final,argu;
 	int in,fin,tamano,procesador;
@@ -519,4 +523,7 @@ int main(int argc, char* argv[])
 	}
 	
 	MPI_Finalize();
+	t1=clock();
+    double time = (double(t1-t0)/CLOCKS_PER_SEC);
+    cout << "Execution Time: " << time << endl;
 }
