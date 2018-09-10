@@ -15,13 +15,6 @@ struct Estacion {
   int comb;
 };
 
-void imprimir_Nombres()
-{
-	cout<<"Fabian Cancino Riquelme"<<endl;
-	cout<<"Victor Gomez Espinosa"<<endl;
-	cout<<"Alberto Vasquez Benavente"<<endl;
-}
-
 void llenar_Metro(vector <Estacion> &metro)
 {
 	Estacion a;
@@ -442,7 +435,7 @@ void planviaje_Maestro(vector <Estacion> metro, int ini, int des, int tamano)
 int main(int argc, char* argv[])
 {
 	vector <Estacion> metro;
-	string inic,final,hola;
+	string inic,final,argu;
 	int in,fin,tamano,procesador;
   	MPI_Init(&argc,&argv);
   	MPI_Comm_size(MPI_COMM_WORLD, &tamano); 
@@ -451,10 +444,12 @@ int main(int argc, char* argv[])
 	{
 		if(argc==2 && procesador==0) 
 		{
-			hola=argv[1];
-			if(hola=="-v")
+			argu=argv[1];
+			if(argu=="-v")
 			{
-				imprimir_Nombres();
+				cout<<"Fabian Cancino Riquelme"<<endl;
+				cout<<"Victor Gomez Espinosa"<<endl;
+				cout<<"Alberto Vasquez Benavente"<<endl;
 			}
 			else
 			{
@@ -465,8 +460,8 @@ int main(int argc, char* argv[])
 		{
 			if(argc==4)
 			{
-				hola=argv[1];
-				if(hola=="-f")
+				argu=argv[1];
+				if(argu=="-f")
 				{
 					inic=argv[2];
 					final=argv[3];
