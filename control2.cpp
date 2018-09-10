@@ -15,78 +15,79 @@ struct Estacion {
   int comb;
 };
 
-void llenar_Metro(vector <Estacion> &metro)
+void Llenado(vector <Estacion> &metro)
 {
-	Estacion a;
-	string linea,cad4,cad3;
-	int pos,cont=1,lin;
-	ifstream fixero("estaciones.csv");
+	Estacion aux;
+	string l,auxStr,auxStr2;
+	int posicion,cont=1,lineaAux;
+	ifstream fixero("Lineas.csv");
 	while(!fixero.eof())
 	{
-		getline(fixero,linea);
-		pos=linea.find(" ");
-		cad4 = linea.substr(0,pos);
-		pos=linea.find(" ")+1;
-		cad3 =linea.substr(pos);
-		pos=cad3.find(" ");
-		if(cad4=="Línea")
+		getline(fixero,l);
+		posicion=l.find(" ");
+		auxStr = l.substr(0,posicion);
+		posicion=l.find(" ")+1;
+		auxStr2 =l.substr(posicion);
+		posicion=auxStr2.find(" ");
+		if(auxStr=="Línea")
 		{
-			pos=cad3.find(" ");
-			cad3=cad3.substr(0,pos);
-			if(cad3=="4a")
+			posicion=auxStr2.find(" ");
+			auxStr2=auxStr2.substr(0,posicion);
+			if(auxStr2=="4a")
 			{
-				lin=3;
+				lineaAux=3;
 			}
 			else
 			{
-				lin=atoi(cad3.c_str());
+				lineaAux=atoi(auxStr2.c_str());
 			}
-			a.id=0;
-			a.linea=0;
-			a.nombre="";
-			a.cod="";
-			a.comb=0;
-			metro.push_back(a);
+			aux.id=0;
+			aux.linea=0;
+			aux.nombre="";
+			aux.Abrev="";
+			aux.combinacion=0;
+			metro.push_back(aux);
 		}
 		else
 		{
-			a.id=cont;
-			a.linea=lin;
-			a.nombre=cad3;
-			a.cod=cad4;
-			a.comb=0;
+			aux.id=cont;
+			aux.linea=lineaAux;
+			aux.nombre=auxStr2;
+			aux.Abrev=auxStr;
+			aux.combinacion=0;
 			cont++;
-			metro.push_back(a);
+			metro.push_back(aux);
 		}
 	}
 	metro.pop_back();
-	Estacion b;
-	b.id=0;
-	b.linea=0;
-	b.nombre="";
-	b.cod="";
-	b.comb=0;
-	metro.push_back(b);
+	Estacion aux2;
+	aux2.id=0;
+	aux2.linea=0;
+	aux2.nombre="";
+	aux2.Abrev="";
+	aux2.combinacion=0;
+	metro.push_back(aux2);
 }
 
 
-int buscar_Estacion(vector <Estacion> metro, string inic, string final, int *in, int *fin)
+
+int BusquedaEstaciones(vector <Estacion> &metro, string Inicio, string Destino, int *inicio, int *final)
 {
-	int cont=0;
+	int x=0;
 	for(int i=0;i<metro.size();i++)
 	{
-		if(metro[i].id!=0 && metro[i].cod==inic)
+		if(metro[i].id!=0 && metro[i].Abrev==Inicio)
 		{
-			*in=i;
-			cont++;
+			*inicio=i;
+			x++;
 		}
-		if(metro[i].id!=0 && metro[i].cod==final)
+		if(metro[i].id!=0 && metro[i].Abrev==Destino)
 		{
-			*fin=i;
-			cont++;
+			*final=i;
+			x++;
 		}
 	}
-	return cont;
+	return x;
 }
 
 void envia_Maestro(string &cam,int inic,int cont,int proc)
@@ -465,7 +466,7 @@ int main(int argc, char* argv[])
 				{
 					inic=argv[2];
 					final=argv[3];
-					llenar_Metro(metro); //llena el vector de estaciones
+					Llenado(metro); //llena el vector de estaciones
 					for(int i=0;i<metro.size();i++)
 					{
 						for(int j=0;j<metro.size();j++)
@@ -481,7 +482,7 @@ int main(int argc, char* argv[])
 						}
 					}
 					
-					if(buscar_Estacion(metro,inic,final,&in,&fin)==2)
+					if(BusquedaEstaciones(metro,inic,final,&in,&fin)==2)
 					{	
 						if(procesador==0)
 						{
