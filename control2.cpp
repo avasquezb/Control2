@@ -96,24 +96,6 @@ int buscar_Estacion(vector <Estacion> metro, string inic, string final, int *in,
 	return cont;
 }
 
-void buscar_Combis(vector <Estacion> &metro)
-{
-	for(int i=0;i<metro.size();i++)
-	{
-		for(int j=0;j<metro.size();j++)
-		{
-			if(i!=j && metro[i].id!=0 && metro[j].id!=0 )
-			{
-				if(metro[i].nombre==metro[j].nombre && metro[i].comb==0)
-				{
-					metro[i].comb=metro[j].linea;
-					metro[j].comb=metro[i].linea;
-				}
-			}
-		}
-	}
-}
-
 void envia_Maestro(string &cam,int inic,int cont,int proc)
 {
 	int largo;
@@ -503,7 +485,7 @@ int main(int argc, char* argv[])
 							}
 						}
 					}
-					//buscar_Combis(metro); //funcion busca todas las estaciones que poseen estacion en mas de una linea, si lo encuentra guarda en variable comb el numero de la linea a la que combina.
+					
 					if(buscar_Estacion(metro,inic,final,&in,&fin)==2)
 					{	
 						if(procesador==0)
