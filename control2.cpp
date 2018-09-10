@@ -18,7 +18,8 @@ struct Estacion {
   int comb;
 };
 
-void Llenado(vector <Estacion> &metro)
+void Llenado(vector <Estacion> &metro) // En esta funciona llenamos el vector con las estaciones existentes
+										// y sus respectiva informacion
 {
 	Estacion aux;
 	string l,auxStr,auxStr2;
@@ -93,7 +94,7 @@ int BusquedaEstaciones(vector <Estacion> &metro, string Inicio, string Destino, 
 	return x;
 }
 
-void SMaster(string &cam,int inic,int contador,int proc)
+void SMaster(string &cam,int inic,int contador,int proc) // enviamos informacion desde el maestro
 {
 	int l;
 	l=cam.length()+1;
@@ -106,7 +107,7 @@ void SMaster(string &cam,int inic,int contador,int proc)
 	MPI_Send(&todo, l, MPI_CHAR, proc, 0, MPI_COMM_WORLD);
 }
 
-void Rmaster(vector <string> &p, vector <int> &v, int proc)
+void Rmaster(vector <string> &p, vector <int> &v, int proc) // recibe informacion el maestro
 {
 	string datos;
 	int contador,c_todo;
@@ -120,7 +121,7 @@ void Rmaster(vector <string> &p, vector <int> &v, int proc)
 }
 
 void oMaster(vector <Estacion> metro, int *contador, string &cam, int inic, int des, vector <string> &p, vector <int> &v,int tam)
-{
+{ // en esta funcion buscamos el camino desde el Maestro
 	int m_dest,m_inic,c_dest,c_inic,c_dest2=0,c_inic2=0,proc=1,cGlobal=1;
 	string camD,camI;
 
@@ -256,7 +257,7 @@ void oMaster(vector <Estacion> metro, int *contador, string &cam, int inic, int 
 }
 
 void oEsclavo(vector <Estacion> metro, int *contador, string &cam, int inic, int des, vector <string> &p, vector <int> &v)
-{
+{	// en esta funcion hacemos uso de busqeuda de camino en los esclavos
 
 	if(*contador>50)
 	{
@@ -346,8 +347,8 @@ void oEsclavo(vector <Estacion> metro, int *contador, string &cam, int inic, int
 	}
 }
 
-void rEsclavo(string camino, int valor, int proc)
-{
+void rEsclavo(string camino, int valor, int proc) // pc esclavo envia la respuesta
+{	
 	int l;
 	l=camino.length()+1;
 	camino.size();
@@ -359,7 +360,8 @@ void rEsclavo(string camino, int valor, int proc)
 	MPI_Send(&todo, l, MPI_CHAR, 0, 0, MPI_COMM_WORLD);
 }
 
-void PL_Esclavo(vector <Estacion> metro, int m_destino, int procesador)
+void PL_Esclavo(vector <Estacion> metro, int m_destino, int procesador) // en esta funcion planificamos le viaje
+																		// a nivel de exclavo
 {
 	vector <string> aux;
 	vector <int> auxInt;
@@ -391,11 +393,11 @@ void PL_Esclavo(vector <Estacion> metro, int m_destino, int procesador)
 	}
 }
 
-void PL_M(vector <Estacion> metro, int m_inicio, int m_destino, int tam)
+void PL_M(vector <Estacion> metro, int m_inicio, int m_destino, int tam) // planificamos vieja a nivel Maestro
 {
 
 	int aux=0;
-	if(metro[m_inicio].nombre==metro[m_destino].nombre)
+	if(metro[m_inicio].nombre==metro[m_destino].nombre) // en caso de que se ingresa la misma estacion como inicio y final
 	{
 		cout<<"La ruta es : "<<endl;
 		cout<<metro[m_inicio].nombre<<endl;	
@@ -411,7 +413,7 @@ void PL_M(vector <Estacion> metro, int m_inicio, int m_destino, int tam)
 		vector <string> auxStr;
 		vector <int> auxInt;
 		int min=1000;
-		oMaster(metro,&aux,recorrido,m_inicio,m_destino,auxStr,auxInt,tam);
+		oMaster(metro,&aux,recorrido,m_inicio,m_destino,auxStr,auxInt,tam); // se envia para que comience a buscar opciones
 		for(int i=0;i<auxInt.size();i++)
 		{
 			if(auxInt[i]<min)
@@ -434,7 +436,7 @@ void PL_M(vector <Estacion> metro, int m_inicio, int m_destino, int tam)
 
 int main(int argc, char* argv[])
 {
-	t0=clock();
+	t0=clock(); // variables iniciales para trabajar
 	vector <Estacion> metro;
 	string inic,final,argu;
 	int in,fin,tam,procesador;
@@ -446,7 +448,7 @@ int main(int argc, char* argv[])
 		if(argc==2 && procesador==0) 
 		{
 			argu=argv[1];
-			if(argu=="-v")
+			if(argu=="-v") // argumento ingresado corresponde a "-v"
 			{
 				cout<<"Fabian Cancino Riquelme"<<endl;
 				cout<<"Victor Gomez Espinosa"<<endl;
@@ -466,8 +468,8 @@ int main(int argc, char* argv[])
 				{
 					inic=argv[2];
 					final=argv[3];
-					Llenado(metro); //llena el vector de estaciones
-					for(int i=0;i<metro.size();i++)
+					Llenado(metro); //Se realiza el llenado del vector "metro"
+					for(int i=0;i<metro.size();i++) // este sector de 2 For anidados, busca las estaciones que sean combinacion
 					{
 						for(int j=0;j<metro.size();j++)
 						{
@@ -486,34 +488,34 @@ int main(int argc, char* argv[])
 					{	
 						if(procesador==0)
 						{
-							PL_M(metro,in,fin,tam);//planifica 
+							PL_M(metro,in,fin,tam);//Se realiza la planificacion en el Master
 						}
 						else
 						{
-							PL_Esclavo(metro,fin,procesador);
+							PL_Esclavo(metro,fin,procesador); // planificacion a nivel de esclavo
 						}
 						
 					}
 					else
 					{
-						if(procesador==0)
+						if(procesador==0) // en caso de error de ingreso de estaciones
 						cout<<"Verifique codigo estaciones"<<endl;
 					}
 				}
 				else
 				{
-					if(procesador==0)
+					if(procesador==0) // entrada distinta a las requeridas
 					cout<<"Entrada Invalida"<<endl;
 				}
 			}
 			else
 			{
-				if(procesador==0)
+				if(procesador==0) // errores ingresados no son validos
 				cout<<"Error en datos ingresados"<<endl;
 			}
 		}
 	}
-	else
+	else // cantidad de procesadores np < 2
 	{
 		cout<<"Se debe usar mas de 1 procesador"<<endl;
 	}
