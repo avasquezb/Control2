@@ -489,7 +489,21 @@ int main(int argc, char* argv[])
 					inic=argv[2];
 					final=argv[3];
 					llenar_Metro(metro); //llena el vector de estaciones
-					buscar_Combis(metro); //funcion busca todas las estaciones que poseen estacion en mas de una linea, si lo encuentra guarda en variable comb el numero de la linea a la que combina.
+					for(int i=0;i<metro.size();i++)
+					{
+						for(int j=0;j<metro.size();j++)
+						{
+							if(i!=j && metro[i].id!=0 && metro[j].id!=0 )
+							{
+								if(metro[i].nombre==metro[j].nombre && metro[i].comb==0)
+								{
+									metro[i].comb=metro[j].linea;
+									metro[j].comb=metro[i].linea;
+								}
+							}
+						}
+					}
+					//buscar_Combis(metro); //funcion busca todas las estaciones que poseen estacion en mas de una linea, si lo encuentra guarda en variable comb el numero de la linea a la que combina.
 					if(buscar_Estacion(metro,inic,final,&in,&fin)==2)
 					{	
 						if(procesador==0)
