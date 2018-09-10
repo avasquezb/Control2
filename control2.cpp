@@ -22,7 +22,7 @@ void Llenado(vector <Estacion> &metro)
 {
 	Estacion aux;
 	string l,auxStr,auxStr2;
-	int posicion,cont=1,lineaAux;
+	int posicion,contador=1,lineaAux;
 	ifstream fixero("Lineas.csv");
 	while(!fixero.eof())
 	{
@@ -53,12 +53,12 @@ void Llenado(vector <Estacion> &metro)
 		}
 		else
 		{
-			aux.id=cont;
+			aux.id=contador;
 			aux.linea=lineaAux;
 			aux.nombre=auxStr2;
 			aux.cod=auxStr;
 			aux.comb=0;
-			cont++;
+			contador++;
 			metro.push_back(aux);
 		}
 	}
@@ -93,93 +93,89 @@ int BusquedaEstaciones(vector <Estacion> &metro, string Inicio, string Destino, 
 	return x;
 }
 
-void envia_Maestro(string &cam,int inic,int cont,int proc)
+void SMaster(string &cam,int inic,int contador,int proc)
 {
-	int largo;
-	largo=cam.length()+1;
-	char todo[largo];
-	cam.copy(todo,largo);
-	todo[largo-1]='\0';
-	MPI_Send(&cont, 1, MPI_INT, proc, 0, MPI_COMM_WORLD);
+	int l;
+	l=cam.length()+1;
+	char todo[l];
+	cam.copy(todo,l);
+	todo[l-1]='\0';
+	MPI_Send(&contador, 1, MPI_INT, proc, 0, MPI_COMM_WORLD);
 	MPI_Send(&inic, 1, MPI_INT, proc, 0, MPI_COMM_WORLD);
-	MPI_Send(&largo, 1, MPI_INT, proc, 0, MPI_COMM_WORLD);
-	MPI_Send(&todo, largo, MPI_CHAR, proc, 0, MPI_COMM_WORLD);
+	MPI_Send(&l, 1, MPI_INT, proc, 0, MPI_COMM_WORLD);
+	MPI_Send(&todo, l, MPI_CHAR, proc, 0, MPI_COMM_WORLD);
 }
 
-void recibe_Maestro(vector <string> &posibles, vector <int> &valores, int proc)
+void Rmaster(vector <string> &p, vector <int> &v, int proc)
 {
 	string datos;
-	int cont,cantodo;
-	MPI_Recv(&cont, 1, MPI_INT, proc, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-	MPI_Recv(&cantodo, 1, MPI_INT, proc, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE); 
-	char todo[cantodo];
-	MPI_Recv(&todo, cantodo, MPI_CHAR, proc, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE); 
+	int contador,c_todo;
+	MPI_Recv(&contador, 1, MPI_INT, proc, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+	MPI_Recv(&c_todo, 1, MPI_INT, proc, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE); 
+	char todo[c_todo];
+	MPI_Recv(&todo, c_todo, MPI_CHAR, proc, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE); 
 	datos=todo;
-	posibles.push_back(datos);
-	valores.push_back(cont);
-	//cout<<"PROCESADOR "<<proc<<endl;
-	//cout<<endl;
-	//cout<<datos<<endl;
-
+	p.push_back(datos);
+	v.push_back(contador);
 }
 
-void opciones_Maestro(vector <Estacion> metro, int *cont, string &cam, int inic, int des, vector <string> &posibles, vector <int> &valores,int tamano)
+void oMaster(vector <Estacion> metro, int *contador, string &cam, int inic, int des, vector <string> &p, vector <int> &v,int tam)
 {
-	int movd,movi,contd,conti,checkd=0,checki=0,proc=1,contglob=1;
-	string caminod,caminoi;
+	int m_dest,m_inic,c_dest,c_inic,c_dest2=0,c_inic2=0,proc=1,cGlobal=1;
+	string camD,camI;
 
-		if(*cont==0 && metro[inic].comb!=0)
+		if(*contador==0 && metro[inic].comb!=0)
 		{
 			for(int i=0;i<metro.size();i++)
 			{
 				if(metro[inic].nombre==metro[i].nombre && inic!=i)
 				{
-					envia_Maestro(cam,i,0,proc);
+					SMaster(cam,i,0,proc);
 					proc++;
-					contglob++;
+					cGlobal++;
 					i=metro.size();
 				}
 			}
 		}
-		contd=*cont;
-		caminod=cam;
-		movd=inic+1;
-		while(metro[movd].id!=0 && checkd==0)
+		c_dest=*contador;
+		camD=cam;
+		m_dest=inic+1;
+		while(metro[m_dest].id!=0 && c_dest2==0)
 		{
-			contd++;
-			caminod=caminod+"->"+metro[movd].nombre;
-			if(movd==des)
+			c_dest++;
+			camD=camD+"-->"+metro[m_dest].nombre;
+			if(m_dest==des)
 			{
-				checkd=1;
-				posibles.push_back(caminod);
-				valores.push_back(contd);
+				c_dest2=1;
+				p.push_back(camD);
+				v.push_back(c_dest);
 			}
 			else
 			{
-				if(metro[movd].comb!=0)
+				if(metro[m_dest].comb!=0)
 				{
 					for(int i=0;i<metro.size();i++)
 					{
-						if(metro[movd].nombre==metro[i].nombre && movd!=i)
+						if(metro[m_dest].nombre==metro[i].nombre && m_dest!=i)
 						{
 							if(metro[i].nombre==metro[des].nombre)
 							{
-								checkd=1;
-								posibles.push_back(caminod);
-								valores.push_back(contd);
+								c_dest2=1;
+								p.push_back(camD);
+								v.push_back(c_dest);
 								i=metro.size();
 							}
 							else
 							{
-								if(contglob>=tamano)
+								if(cGlobal>=tam)
 								{
-									if(proc==tamano)
+									if(proc==tam)
 									proc=1;
-									recibe_Maestro(posibles,valores,proc);
+									Rmaster(p,v,proc);
 								}
-								envia_Maestro(caminod,i,contd,proc);
+								SMaster(camD,i,c_dest,proc);
 								proc++;
-								contglob++;
+								cGlobal++;
 								i=metro.size();
 							}
 						}
@@ -187,71 +183,71 @@ void opciones_Maestro(vector <Estacion> metro, int *cont, string &cam, int inic,
 				}
 			}
 			
-			movd++;
+			m_dest++;
 		}
-		conti=*cont;
-		caminoi=cam;
-		movi=inic-1;
-		while(metro[movi].id!=0 && checki==0)
+		c_inic=*contador;
+		camI=cam;
+		m_inic=inic-1;
+		while(metro[m_inic].id!=0 && c_inic2==0)
 		{
-			conti++;
-			caminoi=caminoi+"->"+metro[movi].nombre;
-			if(movi==des)
+			c_inic++;
+			camI=camI+"-->"+metro[m_inic].nombre;
+			if(m_inic==des)
 			{
-				posibles.push_back(caminoi);
-				valores.push_back(conti);
-				checki=1;
+				p.push_back(camI);
+				v.push_back(c_inic);
+				c_inic2=1;
 			}
 			else
 			{
-				if(metro[movi].comb!=0)
+				if(metro[m_inic].comb!=0)
 				{
 					for(int i=0;i<metro.size();i++)
 					{
-						if(metro[movi].nombre==metro[i].nombre && movi!=i)
+						if(metro[m_inic].nombre==metro[i].nombre && m_inic!=i)
 						{
 							if(metro[i].nombre==metro[des].nombre)
 							{
-								posibles.push_back(caminoi);
-								valores.push_back(conti);
-								checki=1;
+								p.push_back(camI);
+								v.push_back(c_inic);
+								c_inic2=1;
 								i=metro.size();
 							}
 							else
 							{
-								if(contglob>=tamano)
+								if(cGlobal>=tam)
 								{
-									if(proc==tamano)
+									if(proc==tam)
 									proc=1;
-									recibe_Maestro(posibles,valores,proc);
+									Rmaster(p,v,proc);
 								}
-								envia_Maestro(caminoi,i,conti,proc);
+								SMaster(camI,i,c_inic,proc);
 								proc++;
-								contglob++;
+								cGlobal++;
 								i=metro.size();
 							}
 						}
 					}
 				}
 			}
-			movi--;
+			m_inic--;
 		}
-		if(contglob<tamano)
+		if(cGlobal<tam)
 		{
-			for(int i=1;i<contglob;i++)
+			for(int i=1;i<cGlobal;i++)
 			{
-				recibe_Maestro(posibles,valores,i);
+				Rmaster(p,v,i);
 			}
 		}
 		else
 		{
-			for(int i=1;i<tamano;i++)
+			for(int i=1;i<tam;i++)
 			{
-				recibe_Maestro(posibles,valores,i);
+				Rmaster(p,v,i);
 			}
 		}
 
-		for(int i=1;i<tamano;i++)
+		for(int i=1;i<tam;i++)
 		{
 			int nums=-1;
 			MPI_Send(&nums, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
@@ -259,176 +255,176 @@ void opciones_Maestro(vector <Estacion> metro, int *cont, string &cam, int inic,
 	
 }
 
-void opciones_Esclavo(vector <Estacion> metro, int *cont, string &cam, int inic, int des, vector <string> &posibles, vector <int> &valores)
+void oEsclavo(vector <Estacion> metro, int *contador, string &cam, int inic, int des, vector <string> &p, vector <int> &v)
 {
 
-	if(*cont>50)
+	if(*contador>50)
 	{
-		*cont=1000;
+		*contador=1000;
 	}
 	else
 	{
-			int movd,movi,contd,conti,checkd=0,checki=0;
-	string caminod,caminoi;
-		contd=*cont;
-		caminod=cam;
-		movd=inic+1;
-		while(metro[movd].id!=0 && checkd==0)
+			int m_dest,m_inic,c_dest,c_inic,c_dest2=0,c_inic2=0;
+	string camD,camI;
+		c_dest=*contador;
+		camD=cam;
+		m_dest=inic+1;
+		while(metro[m_dest].id!=0 && c_dest2==0)
 		{
-			contd++;
-			caminod=caminod+"->"+metro[movd].nombre;
-			if(movd==des)
+			c_dest++;
+			camD=camD+"->"+metro[m_dest].nombre;
+			if(m_dest==des)
 			{
-				checkd=1;
-				posibles.push_back(caminod);
-				valores.push_back(contd);
+				c_dest2=1;
+				p.push_back(camD);
+				v.push_back(c_dest);
 			}
 			else
 			{
-				if(metro[movd].comb!=0)
+				if(metro[m_dest].comb!=0)
 				{
 					for(int i=0;i<metro.size();i++)
 					{
-						if(metro[movd].nombre==metro[i].nombre && movd!=i)
+						if(metro[m_dest].nombre==metro[i].nombre && m_dest!=i)
 						{
 							if(metro[i].nombre==metro[des].nombre)
 							{
-								checkd=1;
-								posibles.push_back(caminod);
-								valores.push_back(contd);
+								c_dest2=1;
+								p.push_back(camD);
+								v.push_back(c_dest);
 								i=metro.size();
 							}
 							else
 							{
-								opciones_Esclavo(metro,&contd,caminod,i,des,posibles,valores);
+								oEsclavo(metro,&c_dest,camD,i,des,p,v);
 							}
 						}
 					}
 				}
 			}
 			
-			movd++;
+			m_dest++;
 		}
-		conti=*cont;
-		caminoi=cam;
-		movi=inic-1;
-		while(metro[movi].id!=0 && checki==0)
+		c_inic=*contador;
+		camI=cam;
+		m_inic=inic-1;
+		while(metro[m_inic].id!=0 && c_inic2==0)
 		{
-			conti++;
-			caminoi=caminoi+"->"+metro[movi].nombre;
-			if(movi==des)
+			c_inic++;
+			camI=camI+"->"+metro[m_inic].nombre;
+			if(m_inic==des)
 			{
-				posibles.push_back(caminoi);
-				valores.push_back(conti);
-				checki=1;
+				p.push_back(camI);
+				v.push_back(c_inic);
+				c_inic2=1;
 			}
 			else
 			{
-				if(metro[movi].comb!=0)
+				if(metro[m_inic].comb!=0)
 				{
 					for(int i=0;i<metro.size();i++)
 					{
-						if(metro[movi].nombre==metro[i].nombre && movi!=i)
+						if(metro[m_inic].nombre==metro[i].nombre && m_inic!=i)
 						{
 							if(metro[i].nombre==metro[des].nombre)
 							{
-								posibles.push_back(caminoi);
-								valores.push_back(conti);
-								checki=1;
+								p.push_back(camI);
+								v.push_back(c_inic);
+								c_inic2=1;
 								i=metro.size();
 							}
 							else
 							{
-								opciones_Esclavo(metro,&conti,caminoi,i,des,posibles,valores);
+								oEsclavo(metro,&c_inic,camI,i,des,p,v);
 							}
 						}
 					}
 				}
 			}
-			movi--;
+			m_inic--;
 		}
 	}
 }
 
-void resultado_Esclavo(string camino, int valor, int proc)
+void rEsclavo(string camino, int valor, int proc)
 {
-	int largo;
-	largo=camino.length()+1;
+	int l;
+	l=camino.length()+1;
 	camino.size();
-	char todo[largo];
-	camino.copy(todo,largo);
-	todo[largo-1]='\0';
+	char todo[l];
+	camino.copy(todo,l);
+	todo[l-1]='\0';
 	MPI_Send(&valor, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
-	MPI_Send(&largo, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
-	MPI_Send(&todo, largo, MPI_CHAR, 0, 0, MPI_COMM_WORLD);
+	MPI_Send(&l, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
+	MPI_Send(&todo, l, MPI_CHAR, 0, 0, MPI_COMM_WORLD);
 }
 
-void planviaje_Esclavo(vector <Estacion> metro, int des, int proc)
+void PL_Esclavo(vector <Estacion> metro, int m_destino, int procesador)
 {
-	vector <string> posibles;
-	vector <int> valores;
-	string datos;
-	int cantodo,cont=0,menor,indice,ini,op=0;
-	while(cont!=-1)
+	vector <string> aux;
+	vector <int> auxInt;
+	string auxStr;
+	int c_todo,c=0,min,ind,m_inicio,op=0;
+	while(c!=-1)
 	{
-		menor=999;
-		MPI_Recv(&cont, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE); 
-		if(cont!=-1)
+		min=1000;
+		MPI_Recv(&c, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE); 
+		if(c!=-1)
 		{
-			MPI_Recv(&ini, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE); 
-			MPI_Recv(&cantodo, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE); 
-			char todo[cantodo];
-			MPI_Recv(&todo, cantodo, MPI_CHAR, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE); 
-			datos=todo;
-			opciones_Esclavo(metro,&cont,datos,ini,des,posibles,valores);
-			for(int i=op;i<valores.size();i++)
+			MPI_Recv(&m_inicio, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE); 
+			MPI_Recv(&c_todo, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE); 
+			char todo[c_todo];
+			MPI_Recv(&todo, c_todo, MPI_CHAR, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE); 
+			auxStr=todo;
+			oEsclavo(metro,&c,auxStr,m_inicio,m_destino,aux,auxInt);
+			for(int i=op;i<auxInt.size();i++)
 			{
-				if(valores[i]<menor)
+				if(auxInt[i]<min)
 				{
-					menor=valores[i];
-					indice=i;
+					min=auxInt[i];
+					ind=i;
 				}
 			}
-			resultado_Esclavo(posibles[indice],valores[indice],proc);
-			op=valores.size();
+			rEsclavo(aux[ind],auxInt[ind],procesador);
+			op=auxInt.size();
 		}
 	}
 }
 
-void planviaje_Maestro(vector <Estacion> metro, int ini, int des, int tamano)
+void PL_M(vector <Estacion> metro, int m_inicio, int m_destino, int tam)
 {
 
-	int cont=0;
-	if(metro[ini].nombre==metro[des].nombre)
+	int aux=0;
+	if(metro[m_inicio].nombre==metro[m_destino].nombre)
 	{
-		cout<<"_________________RUTA PLANIFICADA___________________"<<endl;
-		cout<<metro[ini].nombre<<endl;	
-		cont=-1;
-		for(int i=1;i<tamano;i++)
+		cout<<"La ruta es : "<<endl;
+		cout<<metro[m_inicio].nombre<<endl;	
+		aux=-1;
+		for(int i=1;i<tam;i++)
 		{
-			MPI_Send(&cont, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
+			MPI_Send(&aux, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
 		}
 	}
 	else
 	{
-		string recorrido=metro[ini].nombre;
-		vector <string> posibles;
-		vector <int> valores;
-		int menor=999;
-		opciones_Maestro(metro,&cont,recorrido,ini,des,posibles,valores,tamano);
-		for(int i=0;i<valores.size();i++)
+		string recorrido=metro[m_inicio].nombre;
+		vector <string> auxStr;
+		vector <int> auxInt;
+		int min=1000;
+		oMaster(metro,&aux,recorrido,m_inicio,m_destino,auxStr,auxInt,tam);
+		for(int i=0;i<auxInt.size();i++)
 		{
-			if(valores[i]<menor)
+			if(auxInt[i]<min)
 			{
-				menor=valores[i];
+				min=auxInt[i];
 			}
 		}
-		for(int i=0;i<valores.size();i++) //verifica si existen mas de 1 ruta menor y entrega todas las opciones
+		for(int i=0;i<auxInt.size();i++) //verifica si existen mas de 1 ruta menor y entrega todas las opciones
 		{
-			if(valores[i]==menor)
+			if(auxInt[i]==min)
 			{
-				cout<<"_________________RUTA PLANIFICADA___________________"<<endl;
-				cout<<posibles[i]<<endl;
+				cout<<"La ruta es :"<<endl;
+				cout<<auxStr[i]<<endl;
 				cout<<endl;
 			}
 		}
@@ -441,11 +437,11 @@ int main(int argc, char* argv[])
 	t0=clock();
 	vector <Estacion> metro;
 	string inic,final,argu;
-	int in,fin,tamano,procesador;
+	int in,fin,tam,procesador;
   	MPI_Init(&argc,&argv);
-  	MPI_Comm_size(MPI_COMM_WORLD, &tamano); 
+  	MPI_Comm_size(MPI_COMM_WORLD, &tam); 
   	MPI_Comm_rank(MPI_COMM_WORLD, &procesador);
-	if(tamano>1)
+	if(tam>1)
 	{
 		if(argc==2 && procesador==0) 
 		{
@@ -490,11 +486,11 @@ int main(int argc, char* argv[])
 					{	
 						if(procesador==0)
 						{
-							planviaje_Maestro(metro,in,fin,tamano);//planifica 
+							PL_M(metro,in,fin,tam);//planifica 
 						}
 						else
 						{
-							planviaje_Esclavo(metro,fin,procesador);
+							PL_Esclavo(metro,fin,procesador);
 						}
 						
 					}
@@ -519,7 +515,7 @@ int main(int argc, char* argv[])
 	}
 	else
 	{
-		cout<<"Utilizar mas de 1 procesador"<<endl;
+		cout<<"Se debe usar mas de 1 procesador"<<endl;
 	}
 	
 	MPI_Finalize();
