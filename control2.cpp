@@ -44,8 +44,8 @@ void Llenado(vector <Estacion> &metro)
 			aux.id=0;
 			aux.linea=0;
 			aux.nombre="";
-			aux.Abrev="";
-			aux.combinacion=0;
+			aux.cod="";
+			aux.comb=0;
 			metro.push_back(aux);
 		}
 		else
@@ -53,8 +53,8 @@ void Llenado(vector <Estacion> &metro)
 			aux.id=cont;
 			aux.linea=lineaAux;
 			aux.nombre=auxStr2;
-			aux.Abrev=auxStr;
-			aux.combinacion=0;
+			aux.cod=auxStr;
+			aux.comb=0;
 			cont++;
 			metro.push_back(aux);
 		}
@@ -64,8 +64,8 @@ void Llenado(vector <Estacion> &metro)
 	aux2.id=0;
 	aux2.linea=0;
 	aux2.nombre="";
-	aux2.Abrev="";
-	aux2.combinacion=0;
+	aux2.cod="";
+	aux2.comb=0;
 	metro.push_back(aux2);
 }
 
@@ -76,12 +76,12 @@ int BusquedaEstaciones(vector <Estacion> &metro, string Inicio, string Destino, 
 	int x=0;
 	for(int i=0;i<metro.size();i++)
 	{
-		if(metro[i].id!=0 && metro[i].Abrev==Inicio)
+		if(metro[i].id!=0 && metro[i].cod==Inicio)
 		{
 			*inicio=i;
 			x++;
 		}
-		if(metro[i].id!=0 && metro[i].Abrev==Destino)
+		if(metro[i].id!=0 && metro[i].cod==Destino)
 		{
 			*final=i;
 			x++;
